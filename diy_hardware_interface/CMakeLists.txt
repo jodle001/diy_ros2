@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.8)
-project(DIY_ROS2_Driver)
+project(diy_hardware_interface)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
 endif()
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(serial REQUIRED)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-W -Wall -Wextra
+          -Wwrite-strings -Wunreachable-code -Wpointer-arith
+          -Winit-self -Wredundant-decls
+          -Wno-unused-parameter -Wno-unused-function)
+endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
         hardware_interface
@@ -22,6 +26,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         std_msgs
         sensor_msgs
         serial
+        diy_serial_manager
 )
 
 # find dependencies
@@ -36,13 +41,14 @@ endforeach()
 ###########
 
 add_library(
-        diy_hardware_interface
+        ${PROJECT_NAME}
         SHARED
         src/diy_hardware_interface.cpp
 )
-ament_target_dependencies(diy_hardware_interface ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_include_directories(
-        diy_hardware_interface
+        ${PROJECT_NAME}
         PRIVATE
         include
 )
