@@ -1,0 +1,9 @@
+<library path="diy_hardware_interface">
+    <class name="diy_hardware_interface/DIYSystemHardware"
+           type="diy_hardware_interface::DIYSystemHardware"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>
+            ROS 2 Control DIY Robot.
+        </description>
+    </class>
+</library>
