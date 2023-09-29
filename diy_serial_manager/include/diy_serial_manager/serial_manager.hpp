@@ -25,6 +25,10 @@ namespace diy
       bool read(SerialData& motion_date);  // Read position from serial port
       void write(const SerialData& motion_data);  // Send position to serial port
 
+      bool isOpen() {
+        return ser_.isOpen();
+      }
+
     private:
       static const int ARRAY_SIZE = 15;
       std::array<uint8_t , ARRAY_SIZE> data_to_send_{};

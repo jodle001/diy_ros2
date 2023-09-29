@@ -18,16 +18,16 @@ namespace diy_hardware_interface
       return CallbackReturn::ERROR;
     }
 
-    const auto rws_port = stoi(info_.hardware_parameters["rws_port"]);
-    const auto rws_ip = info_.hardware_parameters["rws_ip"];
-    const auto is_coupled = info_.hardware_parameters["j23_coupling"];
-
-    if (rws_ip == "None")
-    {
-      RCLCPP_FATAL(LOGGER, "RWS IP not specified");
-      return CallbackReturn::ERROR;
-    }
-
+//    const auto rws_port = stoi(info_.hardware_parameters["rws_port"]);
+//    const auto rws_ip = info_.hardware_parameters["rws_ip"];
+//    const auto is_coupled = info_.hardware_parameters["j23_coupling"];
+//
+//    if (rws_ip == "None")
+//    {
+//      RCLCPP_FATAL(LOGGER, "RWS IP not specified");
+//      return CallbackReturn::ERROR;
+//    }
+//
 //    // Get robot controller description from RWS
 //    abb::robot::RWSManager rws_manager(rws_ip, rws_port, "Default User", "robotics");
 //    const auto robot_controller_description_ =
@@ -82,83 +82,27 @@ namespace diy_hardware_interface
 
 //    urcl_ft_sensor_measurements_.resize(6);
 
-    // Configure EGM
-    RCLCPP_INFO(LOGGER, "Configuring EGM interface...");
+    // Configure Serial
+    RCLCPP_INFO(LOGGER, "Configuring DIY interface...");
 
-//    // Initialize motion data from robot controller description
-//    try
-//    {
-//      abb::robot::initializeMotionData(motion_data_, robot_controller_description_);
-//      abb::robot::SystemStateData system_state_data_;
-//      rws_manager.collectAndUpdateRuntimeData(system_state_data_,motion_data_);
-//      if(j23_coupling_){
-//        motion_data_.groups[0].units[0].joints.at(2).state.position += J23_factor * motion_data_.groups[0].units[0].joints.at(1).state.position;
-//        motion_data_.groups[0].units[0].joints.at(2).state.velocity += J23_factor * motion_data_.groups[0].units[0].joints.at(1).state.velocity;
-//      }
-//
-//      for(uint i = 0; i < motion_data_.groups.size(); i++){
-//        for(uint pp = 0; pp < motion_data_.groups[i].units.size(); pp++){
-//          for(uint k = 0; k < motion_data_.groups[i].units[pp].joints.size(); k++){
-//            motion_data_.groups[i].units[pp].joints[k].state.velocity = 0.0;
-//            motion_data_.groups[i].units[pp].joints[k].command.position = motion_data_.groups[i].units[pp].joints[k].state.position;
-//          }
-//
-////      RCLCPP_ERROR_STREAM(rclcpp::get_logger("stupid_initialize"), motion_data_.groups[i].units[pp].joints[0].state.position << ", " <<
-////      motion_data_.groups[i].units[pp].joints[1].state.position << ", " << motion_data_.groups[i].units[pp].joints[2].state.position << ", " <<
-////      motion_data_.groups[i].units[pp].joints[3].state.position << ", " << motion_data_.groups[i].units[pp].joints[4].state.position << ", " <<
-////      motion_data_.groups[i].units[pp].joints[5].state.position);
-//        }
-//      }
-//    }
-//    catch (...)
-//    {
-//      RCLCPP_ERROR_STREAM(LOGGER, "Failed to initialize motion data from robot controller description");
-//      return CallbackReturn::ERROR;
-//    }
+    try
+    {
+      // TODO: FINISH Setting up SerialManager here
+      const auto port_name = "/dev/ttyACM0";
+      serial_manager_ = std::make_unique<diy::robot::SerialManager>(port_name);
+    }
+    catch (std::runtime_error& e)
+    {
+      RCLCPP_ERROR_STREAM(LOGGER, "Failed to initialize Serial connection");
+      return CallbackReturn::ERROR;
+    }
 
-//  for(uint i = 0; i < motion_data_.groups.size(); i++){
-//    for(uint pp = 0; pp < motion_data_.groups[i].units.size(); pp++){
-//
-//      RCLCPP_ERROR_STREAM(rclcpp::get_logger("stupid"), "command pos: " << motion_data_.groups[i].units[pp].joints[0].state.position << ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[1].state.position << ", " << motion_data_.groups[i].units[pp].joints[2].state.position <<  ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[3].state.position << ", " << motion_data_.groups[i].units[pp].joints[4].state.position << ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[5].state.position);
-//      RCLCPP_ERROR_STREAM(rclcpp::get_logger("stupid"), "command vel: " << motion_data_.groups[i].units[pp].joints[0].state.velocity << ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[1].state.velocity <<  ", " << motion_data_.groups[i].units[pp].joints[2].state.velocity << ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[3].state.velocity <<  ", " << motion_data_.groups[i].units[pp].joints[4].state.velocity << ", " <<
-//                                                                        motion_data_.groups[i].units[pp].joints[5].state.velocity);
-//    }
-//  }
+    if (!serial_manager_->isOpen()) {
+      RCLCPP_ERROR_STREAM(LOGGER, "Failed to open serial port");
+      return CallbackReturn::ERROR;
+    }
 
-//    // Create channel configuration for each mechanical unit group
-//    std::vector<abb::robot::EGMManager::ChannelConfiguration> channel_configurations;
-//    for (const auto& group : robot_controller_description_.mechanical_units_groups())
-//    {
-//      try
-//      {
-//        const auto egm_port = stoi(info_.hardware_parameters[group.name() + "egm_port"]);
-//        const auto channel_configuration =
-//            abb::robot::EGMManager::ChannelConfiguration{ static_cast<uint16_t>(egm_port), group };
-//        channel_configurations.emplace_back(channel_configuration);
-//        RCLCPP_INFO_STREAM(LOGGER,
-//                           "Configuring EGM for mechanical unit group " << group.name() << " on port " << egm_port);
-//      }
-//      catch (std::invalid_argument& e)
-//      {
-//        RCLCPP_FATAL_STREAM(LOGGER, "EGM port for mechanical unit group \"" << group.name()
-//                                                                            << "\" not specified in hardware parameters");
-//        return CallbackReturn::ERROR;
-//      }
-//    }
-//    try
-//    {
-//      egm_manager_ = std::make_unique<abb::robot::EGMManager>(channel_configurations);
-//    }
-//    catch (std::runtime_error& e)
-//    {
-//      RCLCPP_ERROR_STREAM(LOGGER, "Failed to initialize EGM connection");
-//      return CallbackReturn::ERROR;
-//    }
+    // TODO: This is where I left off
 
     return CallbackReturn::SUCCESS;
   }
